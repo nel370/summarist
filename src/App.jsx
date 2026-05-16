@@ -5,12 +5,21 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-// Add page imports here
+import { AuthModalProvider } from '@/lib/AuthModal';
+import AuthModal from '@/components/auth/AuthModal';
+
+import Home from '@/pages/Home';
+import ForYou from '@/pages/ForYou';
+import BookDetail from '@/pages/BookDetail';
+import Player from '@/pages/Player';
+import ChoosePlan from '@/pages/ChoosePlan';
+import Settings from '@/pages/Settings';
+import Library from '@/pages/Library';
+import InnerLayout from '@/components/layout/InnerLayout';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -19,37 +28,42 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
     }
   }
 
-  // Render the main app
   return (
-    <Routes>
-      {/* Add your page Route elements here */}
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <>
+      <AuthModal />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/choose-plan" element={<ChoosePlan />} />
+        <Route element={<InnerLayout />}>
+          <Route path="/for-you" element={<ForYou />} />
+          <Route path="/book/:id" element={<BookDetail />} />
+          <Route path="/player/:id" element={<Player />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/library" element={<Library />} />
+        </Route>
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </>
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
+      <AuthModalProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </AuthModalProvider>
     </AuthProvider>
   )
 }
