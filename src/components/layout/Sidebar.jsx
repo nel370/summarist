@@ -60,13 +60,12 @@ export default function Sidebar() {
     <div className="flex flex-col h-full bg-white">
       {/* Logo */}
       <div className="p-6">
-        <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2">
-          <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M6 30 L20 24 L34 30 L20 36 Z" fill="#032b41"/>
-            <path d="M6 22 L20 16 L34 22 L20 28 Z" fill="#032b41"/>
-            <path d="M6 14 L20 8 L34 14 L20 20 Z" fill="#2bd97c"/>
-          </svg>
-          <span className="text-xl font-semibold text-[#032b41]">Summarist</span>
+        <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center">
+          <img
+            src="https://summarist.vercel.app/_next/static/media/logo.1b1c490b.png"
+            alt="Summarist"
+            className="h-6 w-auto object-contain"
+          />
         </Link>
       </div>
 
