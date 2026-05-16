@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFirebaseAuth as useAuth } from '@/lib/FirebaseAuthContext';
+import { useAuth } from '@/lib/AuthContext';
 import { useAuthModal } from '@/lib/AuthModal';
 import { Link } from 'react-router-dom';
 

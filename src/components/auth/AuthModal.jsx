@@ -3,14 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuthModal } from '@/lib/AuthModal';
-import { auth } from '@/lib/firebase';
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInAnonymously,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from 'firebase/auth';
+import { base44 } from '@/api/base44Client';
 import { User, LogIn } from 'lucide-react';
 
 export default function AuthModal() {
@@ -25,23 +18,10 @@ export default function AuthModal() {
     setLoading(true);
     setError('');
     try {
-      await signInAnonymously(auth);
+      await base44.auth.redirectToLogin();
       closeAuthModal();
     } catch (err) {
       setError('Guest login failed. Please try again.');
-    }
-    setLoading(false);
-  };
-
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      closeAuthModal();
-    } catch (err) {
-      setError('Google sign-in failed. Please try again.');
     }
     setLoading(false);
   };
@@ -59,19 +39,10 @@ export default function AuthModal() {
     }
     setLoading(true);
     try {
-      if (mode === 'login') {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-      }
+      await base44.auth.redirectToLogin();
       closeAuthModal();
     } catch (err) {
-      const msg = err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password'
-        ? 'Invalid email or password.'
-        : err.code === 'auth/email-already-in-use'
-        ? 'Email already in use.'
-        : 'Something went wrong. Please try again.';
-      setError(msg);
+      setError('Something went wrong. Please try again.');
     }
     setLoading(false);
   };
@@ -102,16 +73,6 @@ export default function AuthModal() {
           >
             <User className="w-4 h-4 mr-2" />
             Login as Guest
-          </Button>
-
-          <Button
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            variant="outline"
-            className="w-full h-10 rounded"
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-4 h-4 mr-2" />
-            Sign in with Google
           </Button>
 
           <div className="relative flex items-center justify-center">
