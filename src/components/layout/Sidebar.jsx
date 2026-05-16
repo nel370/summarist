@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useAuthModal } from '@/lib/AuthModal';
 import { base44 } from '@/api/base44Client';
 import {
-  Home, BookOpen, Pen, Search, Settings, HelpCircle, LogIn, LogOut, Menu, X, BookMarked
+  Home, Pen, Search, Settings, HelpCircle, LogIn, LogOut, Menu, X, BookMarked
 } from 'lucide-react';
 
 const navItems = [
@@ -61,7 +61,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-6">
         <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2">
-          <BookOpen className="w-6 h-6 text-[#032b41]" />
+          <img src="https://summarist.vercel.app/logo" alt="Summarist logo" className="h-6 w-6 object-contain" />
           <span className="text-xl font-semibold text-[#032b41]">Summarist</span>
         </Link>
       </div>
