@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/lib/AuthContext';
+import { useFirebaseAuth as useAuth } from '@/lib/FirebaseAuthContext';
 import { useAuthModal } from '@/lib/AuthModal';
 import { Star, Clock, Mic, Lightbulb, BookOpen, Bookmark } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";

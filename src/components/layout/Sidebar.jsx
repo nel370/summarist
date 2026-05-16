@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/lib/AuthContext';
+import { useFirebaseAuth } from '@/lib/FirebaseAuthContext';
 import { useAuthModal } from '@/lib/AuthModal';
-import { base44 } from '@/api/base44Client';
 import {
   Home, BookOpen, Pen, Search, Settings, HelpCircle, LogIn, LogOut, Menu, X, BookMarked
 } from 'lucide-react';
@@ -21,12 +20,12 @@ const bottomItems = [
 
 export default function Sidebar() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useFirebaseAuth();
   const { openAuthModal } = useAuthModal();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleLogout = () => {
-    base44.auth.logout('/');
+  const handleLogout = async () => {
+    await logout();
   };
 
   const NavLink = ({ item }) => {

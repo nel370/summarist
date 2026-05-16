@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { AuthModalProvider } from '@/lib/AuthModal';
 import AuthModal from '@/components/auth/AuthModal';
+import { FirebaseAuthProvider } from '@/lib/FirebaseAuthContext';
 
 import Home from '@/pages/Home';
 import ForYou from '@/pages/ForYou';
@@ -58,10 +59,12 @@ function App() {
     <QueryClientProvider client={queryClientInstance}>
       <Router>
         <AuthProvider>
-          <AuthModalProvider>
-            <AuthenticatedApp />
-            <Toaster />
-          </AuthModalProvider>
+          <FirebaseAuthProvider>
+            <AuthModalProvider>
+              <AuthenticatedApp />
+              <Toaster />
+            </AuthModalProvider>
+          </FirebaseAuthProvider>
         </AuthProvider>
       </Router>
     </QueryClientProvider>

@@ -3,7 +3,14 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuthModal } from '@/lib/AuthModal';
-import { base44 } from '@/api/base44Client';
+import { auth } from '@/lib/firebase';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInAnonymously,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from 'firebase/auth';
 import { User, LogIn } from 'lucide-react';
 
 export default function AuthModal() {
@@ -18,10 +25,23 @@ export default function AuthModal() {
     setLoading(true);
     setError('');
     try {
-      base44.auth.redirectToLogin();
+      await signInAnonymously(auth);
       closeAuthModal();
-    } catch {
-      setError('Failed to login as guest');
+    } catch (err) {
+      setError('Guest login failed. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      closeAuthModal();
+    } catch (err) {
+      setError('Google sign-in failed. Please try again.');
     }
     setLoading(false);
   };
@@ -33,20 +53,25 @@ export default function AuthModal() {
       setError('Please enter a valid email address');
       return;
     }
-    if (mode === 'register' && password.length < 6) {
+    if (password.length < 6) {
       setError('Password must be at least 6 characters');
-      return;
-    }
-    if (!password) {
-      setError('Please enter your password');
       return;
     }
     setLoading(true);
     try {
-      base44.auth.redirectToLogin();
+      if (mode === 'login') {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
       closeAuthModal();
     } catch (err) {
-      setError(mode === 'login' ? 'User not found or invalid credentials' : 'Registration failed');
+      const msg = err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password'
+        ? 'Invalid email or password.'
+        : err.code === 'auth/email-already-in-use'
+        ? 'Email already in use.'
+        : 'Something went wrong. Please try again.';
+      setError(msg);
     }
     setLoading(false);
   };
@@ -67,9 +92,7 @@ export default function AuthModal() {
         </div>
         <div className="p-6 space-y-4">
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md">
-              {error}
-            </div>
+            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md">{error}</div>
           )}
 
           <Button
@@ -79,6 +102,16 @@ export default function AuthModal() {
           >
             <User className="w-4 h-4 mr-2" />
             Login as Guest
+          </Button>
+
+          <Button
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            variant="outline"
+            className="w-full h-10 rounded"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-4 h-4 mr-2" />
+            Sign in with Google
           </Button>
 
           <div className="relative flex items-center justify-center">
@@ -107,29 +140,15 @@ export default function AuthModal() {
               className="w-full bg-[#2bd97c] hover:bg-[#20ba68] text-[#032b41] h-10 font-medium rounded"
             >
               <LogIn className="w-4 h-4 mr-2" />
-              {mode === 'login' ? 'Login' : 'Sign Up'}
+              {loading ? 'Please wait...' : mode === 'login' ? 'Login' : 'Sign Up'}
             </Button>
           </form>
 
-          {mode === 'login' && (
-            <button
-              className="text-[#0365f2] text-sm w-full text-center hover:underline"
-              onClick={() => {/* forgot password */}}
-            >
-              Forgot your password?
-            </button>
-          )}
-
           <button
             className="text-[#032b41] text-sm w-full text-center hover:underline font-medium"
-            onClick={() => {
-              resetForm();
-              setMode(mode === 'login' ? 'register' : 'login');
-            }}
+            onClick={() => { resetForm(); setMode(mode === 'login' ? 'register' : 'login'); }}
           >
-            {mode === 'login'
-              ? "Don't have an account? Sign up"
-              : 'Already have an account? Login'}
+            {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Login'}
           </button>
         </div>
       </DialogContent>
