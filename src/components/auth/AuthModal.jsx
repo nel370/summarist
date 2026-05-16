@@ -1,116 +1,40 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuthModal } from '@/lib/AuthModal';
 import { base44 } from '@/api/base44Client';
-import { User, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 
 export default function AuthModal() {
   const { isOpen, closeAuthModal } = useAuthModal();
-  const [mode, setMode] = useState('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleGuestLogin = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      await base44.auth.redirectToLogin();
-      closeAuthModal();
-    } catch (err) {
-      setError('Guest login failed. Please try again.');
-    }
-    setLoading(false);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-    setLoading(true);
-    try {
-      await base44.auth.redirectToLogin();
-      closeAuthModal();
-    } catch (err) {
-      setError('Something went wrong. Please try again.');
-    }
-    setLoading(false);
-  };
-
-  const resetForm = () => {
-    setEmail('');
-    setPassword('');
-    setError('');
+  const handleLogin = () => {
+    base44.auth.redirectToLogin(window.location.href);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) closeAuthModal(); }}>
       <DialogContent className="sm:max-w-[400px] p-0 gap-0 border-none overflow-hidden">
         <div className="bg-[#032b41] p-6 text-white text-center">
-          <h2 className="text-xl font-bold">
-            {mode === 'login' ? 'Log in to Summarist' : 'Sign up for Summarist'}
-          </h2>
+          <h2 className="text-xl font-bold">Log in to Summarist</h2>
+          <p className="text-sm text-white/70 mt-1">Access thousands of book summaries</p>
         </div>
-        <div className="p-6 space-y-4">
-          {error && (
-            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md">{error}</div>
-          )}
-
+        <div className="p-6 space-y-4 text-center">
+          <img
+            src="https://summarist.vercel.app/_next/static/media/login.e313e580.png"
+            alt="Login"
+            className="max-w-[200px] mx-auto"
+          />
+          <p className="text-sm text-[#394547]">
+            Sign in to save your library, track progress, and access premium summaries.
+          </p>
           <Button
-            onClick={handleGuestLogin}
-            disabled={loading}
-            className="w-full bg-[#3a4649] hover:bg-[#2a3639] text-white h-10 rounded"
+            onClick={handleLogin}
+            className="w-full bg-[#2bd97c] hover:bg-[#20ba68] text-[#032b41] h-10 font-medium rounded"
           >
-            <User className="w-4 h-4 mr-2" />
-            Login as Guest
+            <LogIn className="w-4 h-4 mr-2" />
+            Login / Sign Up
           </Button>
-
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-gray-200 w-full" />
-            <span className="bg-white px-3 text-sm text-gray-400 absolute">or</span>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <Input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-10"
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-10"
-            />
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#2bd97c] hover:bg-[#20ba68] text-[#032b41] h-10 font-medium rounded"
-            >
-              <LogIn className="w-4 h-4 mr-2" />
-              {loading ? 'Please wait...' : mode === 'login' ? 'Login' : 'Sign Up'}
-            </Button>
-          </form>
-
-          <button
-            className="text-[#032b41] text-sm w-full text-center hover:underline font-medium"
-            onClick={() => { resetForm(); setMode(mode === 'login' ? 'register' : 'login'); }}
-          >
-            {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Login'}
-          </button>
         </div>
       </DialogContent>
     </Dialog>
