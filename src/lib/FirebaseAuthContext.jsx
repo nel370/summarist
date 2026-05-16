@@ -1,48 +1,32 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { base44 } from '@/api/base44Client';
 
-const FirebaseAuthContext = createContext();
+const AuthContext = createContext();
 
 export const FirebaseAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser({
-          id: firebaseUser.uid,
-          email: firebaseUser.email,
-          full_name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-          role: 'user',
-          isAnonymous: firebaseUser.isAnonymous,
-        });
-        setIsAuthenticated(true);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-      }
-      setIsLoadingAuth(false);
-    });
-    return unsubscribe;
+    base44.auth.me()
+      .then(u => setUser(u))
+      .catch(() => setUser(null))
+      .finally(() => setIsLoadingAuth(false));
   }, []);
 
-  const logout = async () => {
-    await signOut(auth);
-    window.location.href = '/';
+  const logout = () => {
+    base44.auth.logout('/');
   };
 
   return (
-    <FirebaseAuthContext.Provider value={{ user, isAuthenticated, isLoadingAuth, logout }}>
+    <AuthContext.Provider value={{ user, isLoadingAuth, logout }}>
       {children}
-    </FirebaseAuthContext.Provider>
+    </AuthContext.Provider>
   );
 };
 
 export const useFirebaseAuth = () => {
-  const context = useContext(FirebaseAuthContext);
-  if (!context) throw new Error('useFirebaseAuth must be used within a FirebaseAuthProvider');
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useFirebaseAuth must be used within FirebaseAuthProvider');
   return context;
 };

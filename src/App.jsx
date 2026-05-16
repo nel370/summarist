@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthModalProvider } from '@/lib/AuthModal';
 import AuthModal from '@/components/auth/AuthModal';
-import { FirebaseAuthProvider, useFirebaseAuth } from '@/lib/FirebaseAuthContext';
+import { FirebaseAuthProvider } from '@/lib/FirebaseAuthContext';
 
 import Home from '@/pages/Home';
 import ForYou from '@/pages/ForYou';
@@ -16,43 +16,25 @@ import Settings from '@/pages/Settings';
 import Library from '@/pages/Library';
 import InnerLayout from '@/components/layout/InnerLayout';
 
-const AuthenticatedApp = () => {
-  const { isLoadingAuth } = useFirebaseAuth();
-
-  if (isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <AuthModal />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/choose-plan" element={<ChoosePlan />} />
-        <Route element={<InnerLayout />}>
-          <Route path="/for-you" element={<ForYou />} />
-          <Route path="/book/:id" element={<BookDetail />} />
-          <Route path="/player/:id" element={<Player />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/library" element={<Library />} />
-        </Route>
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </>
-  );
-};
-
 function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>
       <Router>
         <FirebaseAuthProvider>
           <AuthModalProvider>
-            <AuthenticatedApp />
+            <AuthModal />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/choose-plan" element={<ChoosePlan />} />
+              <Route element={<InnerLayout />}>
+                <Route path="/for-you" element={<ForYou />} />
+                <Route path="/book/:id" element={<BookDetail />} />
+                <Route path="/player/:id" element={<Player />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/library" element={<Library />} />
+              </Route>
+              <Route path="*" element={<PageNotFound />} />
+            </Routes>
             <Toaster />
           </AuthModalProvider>
         </FirebaseAuthProvider>
