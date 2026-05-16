@@ -3,13 +3,15 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuthModal } from '@/lib/AuthModal';
 import { base44 } from '@/api/base44Client';
+import { appParams } from '@/lib/app-params';
 import { LogIn } from 'lucide-react';
 
 export default function AuthModal() {
   const { isOpen, closeAuthModal } = useAuthModal();
 
   const handleLogin = () => {
-    base44.auth.redirectToLogin(window.location.href);
+    const returnUrl = appParams.appBaseUrl ? appParams.appBaseUrl : window.location.href;
+    base44.auth.redirectToLogin(returnUrl);
   };
 
   return (
