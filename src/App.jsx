@@ -3,10 +3,9 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { AuthModalProvider } from '@/lib/AuthModal';
 import AuthModal from '@/components/auth/AuthModal';
+import { FirebaseAuthProvider, useFirebaseAuth } from '@/lib/FirebaseAuthContext';
 
 import Home from '@/pages/Home';
 import ForYou from '@/pages/ForYou';
@@ -18,20 +17,14 @@ import Library from '@/pages/Library';
 import InnerLayout from '@/components/layout/InnerLayout';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth } = useFirebaseAuth();
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  if (isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
       </div>
     );
-  }
-
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    }
   }
 
   return (
@@ -57,12 +50,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>
       <Router>
-        <AuthProvider>
+        <FirebaseAuthProvider>
           <AuthModalProvider>
             <AuthenticatedApp />
             <Toaster />
           </AuthModalProvider>
-        </AuthProvider>
+        </FirebaseAuthProvider>
       </Router>
     </QueryClientProvider>
   )
