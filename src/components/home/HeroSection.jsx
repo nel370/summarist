@@ -25,7 +25,7 @@ export default function HeroSection() {
         </div>
         <div className="hidden md:flex flex-1 justify-end">
           <img
-            src="https://summarist.vercel.app/_next/static/media/landing.e4787571.png"
+            src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop"
             alt="Summarist illustration"
             className="max-w-[400px] w-full"
           />
