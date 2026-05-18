@@ -2,9 +2,14 @@ import React, { useState } from 'react';
 import { useAuthModal } from '@/lib/AuthModal';
 import { base44 } from '@/api/base44Client';
 
+const GUEST_EMAIL = 'guest@summarist.com';
+const GUEST_PASSWORD = 'guest123456';
+
 export default function AuthModal() {
   const { isOpen, closeAuthModal } = useAuthModal();
   const [showGuestInfo, setShowGuestInfo] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [guestError, setGuestError] = useState('');
 
   const handleLogin = () => {
     closeAuthModal();
@@ -13,12 +18,30 @@ export default function AuthModal() {
 
   const handleGuestLogin = () => {
     setShowGuestInfo(true);
+    setGuestError('');
   };
 
-  const handleProceedAsGuest = () => {
-    closeAuthModal();
-    setShowGuestInfo(false);
-    base44.auth.redirectToLogin(window.location.href);
+  const handleProceedAsGuest = async () => {
+    setGuestLoading(true);
+    setGuestError('');
+    try {
+      await base44.auth.loginViaEmailPassword(GUEST_EMAIL, GUEST_PASSWORD);
+      closeAuthModal();
+      setShowGuestInfo(false);
+      window.location.href = '/for-you';
+    } catch (err) {
+      // If login fails, try registering the guest account first
+      try {
+        await base44.auth.register({ email: GUEST_EMAIL, password: GUEST_PASSWORD });
+        await base44.auth.loginViaEmailPassword(GUEST_EMAIL, GUEST_PASSWORD);
+        closeAuthModal();
+        setShowGuestInfo(false);
+        window.location.href = '/for-you';
+      } catch (regErr) {
+        setGuestError('Guest login is temporarily unavailable. Please try again.');
+      }
+    }
+    setGuestLoading(false);
   };
 
   const handleClose = () => {
@@ -117,19 +140,24 @@ export default function AuthModal() {
               <div className="bg-[#f1f6f4] rounded-lg p-4 mb-6 space-y-3">
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Email</p>
-                  <p className="text-sm font-semibold text-[#032b41] select-all">guest@gmail.com</p>
+                  <p className="text-sm font-semibold text-[#032b41] select-all">{GUEST_EMAIL}</p>
                 </div>
                 <div className="border-t border-gray-200 pt-3">
                   <p className="text-xs text-gray-500 mb-1">Password</p>
-                  <p className="text-sm font-semibold text-[#032b41] select-all">guest123</p>
+                  <p className="text-sm font-semibold text-[#032b41] select-all">{GUEST_PASSWORD}</p>
                 </div>
               </div>
 
+              {guestError && (
+                <p className="text-xs text-red-500 text-center mb-3">{guestError}</p>
+              )}
+
               <button
                 onClick={handleProceedAsGuest}
-                className="w-full bg-[#2bd97c] hover:bg-[#20ba68] text-[#032b41] font-semibold py-2.5 rounded text-sm transition-colors mb-3"
+                disabled={guestLoading}
+                className="w-full bg-[#2bd97c] hover:bg-[#20ba68] text-[#032b41] font-semibold py-2.5 rounded text-sm transition-colors mb-3 disabled:opacity-60"
               >
-                Proceed to Login
+                {guestLoading ? 'Logging in...' : 'Login as Guest'}
               </button>
               <button
                 onClick={() => setShowGuestInfo(false)}
