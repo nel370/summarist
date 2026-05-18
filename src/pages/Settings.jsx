@@ -1,11 +1,22 @@
 import React from 'react';
-import { useFirebaseAuth as useAuth } from '@/lib/FirebaseAuthContext';
+import { useFirebaseAuth } from '@/lib/FirebaseAuthContext';
 import { useAuthModal } from '@/lib/AuthModal';
 import { Link } from 'react-router-dom';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, isLoadingAuth } = useFirebaseAuth();
   const { openAuthModal } = useAuthModal();
+
+  if (isLoadingAuth) {
+    return (
+      <div className="space-y-4 max-w-[600px]">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-5 w-64" />
+        <Skeleton className="h-5 w-48" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -30,19 +41,30 @@ export default function Settings() {
         <div className="space-y-6 max-w-[600px]">
           <div className="border-b border-gray-100 pb-4">
             <p className="text-sm text-gray-500 mb-1">Your Subscription plan</p>
-            <p className="text-base font-medium text-[#032b41]">Basic</p>
-            <Link
-              to="/choose-plan"
-              className="text-sm text-[#0365f2] hover:underline mt-1 inline-block"
-            >
-              Upgrade to Premium
-            </Link>
+            <p className="text-base font-medium text-[#032b41]">
+              {user.role === 'premium-plus' ? 'Premium Plus' : user.role === 'premium' ? 'Premium' : 'Basic'}
+            </p>
+            {(!user.role || user.role === 'user' || user.role === 'admin') && (
+              <Link
+                to="/choose-plan"
+                className="text-sm text-[#0365f2] hover:underline mt-1 inline-block"
+              >
+                Upgrade to Premium
+              </Link>
+            )}
           </div>
 
           <div className="border-b border-gray-100 pb-4">
             <p className="text-sm text-gray-500 mb-1">Email</p>
             <p className="text-base font-medium text-[#032b41]">{user.email || 'N/A'}</p>
           </div>
+
+          {user.full_name && (
+            <div className="border-b border-gray-100 pb-4">
+              <p className="text-sm text-gray-500 mb-1">Name</p>
+              <p className="text-base font-medium text-[#032b41]">{user.full_name}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

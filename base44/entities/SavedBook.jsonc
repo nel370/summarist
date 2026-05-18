@@ -1,0 +1,47 @@
+{
+  "name": "SavedBook",
+  "type": "object",
+  "properties": {
+    "book_id": {
+      "type": "string",
+      "description": "The external book ID"
+    },
+    "title": {
+      "type": "string",
+      "description": "Book title"
+    },
+    "author": {
+      "type": "string",
+      "description": "Book author"
+    },
+    "image_link": {
+      "type": "string",
+      "description": "Book cover image URL"
+    },
+    "audio_link": {
+      "type": "string",
+      "description": "Book audio URL"
+    },
+    "subscription_required": {
+      "type": "boolean",
+      "description": "Whether a subscription is required"
+    },
+    "average_rating": {
+      "type": "number",
+      "description": "Average rating"
+    },
+    "sub_title": {
+      "type": "string",
+      "description": "Book subtitle"
+    },
+    "finished": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user finished listening"
+    }
+  },
+  "required": [
+    "book_id",
+    "title"
+  ]
+}

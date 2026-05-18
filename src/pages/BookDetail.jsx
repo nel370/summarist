@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useFirebaseAuth as useAuth } from '@/lib/FirebaseAuthContext';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useFirebaseAuth } from '@/lib/FirebaseAuthContext';
 import { useAuthModal } from '@/lib/AuthModal';
+import { base44 } from '@/api/base44Client';
 import { Star, Clock, Mic, Lightbulb, BookOpen, Bookmark } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -13,16 +14,16 @@ function formatDuration(seconds) {
 }
 
 export default function BookDetail() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const pathParts = window.location.pathname.split('/');
-  const id = pathParts[pathParts.length - 1];
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useFirebaseAuth();
   const { openAuthModal } = useAuthModal();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [duration, setDuration] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [savedId, setSavedId] = useState(null);
+  const [savingLoading, setSavingLoading] = useState(false);
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -44,24 +45,47 @@ export default function BookDetail() {
     }
   }, [book?.audioLink]);
 
+  // Check if already saved
+  useEffect(() => {
+    if (!user || !id) return;
+    base44.entities.SavedBook.filter({ book_id: id, created_by: user.email })
+      .then(data => {
+        if (data.length > 0) {
+          setSaved(true);
+          setSavedId(data[0].id);
+        }
+      });
+  }, [user, id]);
+
   const handleReadListen = () => {
-    if (!user) {
-      openAuthModal();
-      return;
-    }
-    if (book.subscriptionRequired) {
-      navigate('/choose-plan');
-      return;
-    }
+    if (!user) { openAuthModal(); return; }
+    if (book.subscriptionRequired) { navigate('/choose-plan'); return; }
     navigate(`/player/${id}`);
   };
 
-  const handleSave = () => {
-    if (!user) {
-      openAuthModal();
-      return;
+  const handleSave = async () => {
+    if (!user) { openAuthModal(); return; }
+    setSavingLoading(true);
+    if (saved && savedId) {
+      await base44.entities.SavedBook.delete(savedId);
+      setSaved(false);
+      setSavedId(null);
+    } else {
+      const record = await base44.entities.SavedBook.create({
+        book_id: id,
+        title: book.title,
+        author: book.author,
+        image_link: book.imageLink,
+        audio_link: book.audioLink,
+        subscription_required: book.subscriptionRequired,
+        average_rating: book.averageRating,
+        sub_title: book.subTitle,
+        finished: false,
+      });
+      setSaved(true);
+      setSavedId(record.id);
     }
-    setSaved(!saved);
+    setSavingLoading(false);
   };
 
   if (loading) {
@@ -95,7 +119,6 @@ export default function BookDetail() {
         {book.subTitle && <p className="text-base text-[#032b41] font-medium mb-2">{book.subTitle}</p>}
         <p className="text-sm text-[#394547] mb-4">{book.author}</p>
 
-        {/* Meta */}
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#032b41] mb-4 border-y border-gray-100 py-3">
           <span className="flex items-center gap-1">
             <Star className="w-4 h-4" /> {book.averageRating} ({book.totalRating} ratings)
@@ -111,7 +134,6 @@ export default function BookDetail() {
           </span>
         </div>
 
-        {/* Actions */}
         <button
           onClick={handleReadListen}
           className="bg-[#032b41] hover:bg-[#032b41]/90 text-white px-8 h-12 rounded flex items-center gap-2 text-sm font-medium transition-colors mb-3"
@@ -121,13 +143,13 @@ export default function BookDetail() {
 
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 text-[#0365f2] hover:underline text-sm mb-8"
+          disabled={savingLoading}
+          className="flex items-center gap-2 text-[#0365f2] hover:underline text-sm mb-8 disabled:opacity-50"
         >
           <Bookmark className={`w-4 h-4 ${saved ? 'fill-[#0365f2]' : ''}`} />
           {saved ? 'Saved to My Library' : 'Add title to My Library'}
         </button>
 
-        {/* Description */}
         <h3 className="text-lg font-bold text-[#032b41] mb-3">What's it about?</h3>
         <div className="flex flex-wrap gap-2 mb-4">
           {book.tags?.map(tag => (
@@ -140,7 +162,6 @@ export default function BookDetail() {
         <p className="text-sm text-[#394547] font-light leading-relaxed">{book.authorDescription}</p>
       </div>
 
-      {/* Book cover */}
       <div className="shrink-0">
         {book.imageLink ? (
           <img src={book.imageLink} alt={book.title} className="w-[300px] h-[300px] object-cover rounded" />

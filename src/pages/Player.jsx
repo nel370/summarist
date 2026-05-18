@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { Play, Pause, RotateCcw, RotateCw } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { base44 } from '@/api/base44Client';
+import { useFirebaseAuth } from '@/lib/FirebaseAuthContext';
 
 function formatTime(s) {
   if (!s || isNaN(s)) return '0:00';
@@ -10,8 +13,8 @@ function formatTime(s) {
 }
 
 export default function Player() {
-  const pathParts = window.location.pathname.split('/');
-  const id = pathParts[pathParts.length - 1];
+  const { id } = useParams();
+  const { user } = useFirebaseAuth();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
@@ -19,14 +22,12 @@ export default function Player() {
   const [duration, setDuration] = useState(0);
   const [fontSize, setFontSize] = useState(1);
   const audioRef = useRef(null);
+  const finishedMarked = useRef(false);
 
   useEffect(() => {
     fetch(`https://us-central1-summaristt.cloudfunctions.net/getBook?id=${id}`)
       .then(r => r.json())
-      .then(data => {
-        setBook(data);
-        setLoading(false);
-      });
+      .then(data => { setBook(data); setLoading(false); });
   }, [id]);
 
   useEffect(() => {
@@ -34,7 +35,29 @@ export default function Player() {
     if (!audio) return;
     const onTime = () => setCurrentTime(audio.currentTime);
     const onMeta = () => setDuration(audio.duration);
-    const onEnded = () => setPlaying(false);
+    const onEnded = async () => {
+      setPlaying(false);
+      // Mark book as finished
+      if (user && !finishedMarked.current) {
+        finishedMarked.current = true;
+        const existing = await base44.entities.SavedBook.filter({ book_id: id, created_by: user.email });
+        if (existing.length > 0) {
+          await base44.entities.SavedBook.update(existing[0].id, { finished: true });
+        } else if (book) {
+          await base44.entities.SavedBook.create({
+            book_id: id,
+            title: book.title,
+            author: book.author,
+            image_link: book.imageLink,
+            audio_link: book.audioLink,
+            subscription_required: book.subscriptionRequired,
+            average_rating: book.averageRating,
+            sub_title: book.subTitle,
+            finished: true,
+          });
+        }
+      }
+    };
     audio.addEventListener('timeupdate', onTime);
     audio.addEventListener('loadedmetadata', onMeta);
     audio.addEventListener('ended', onEnded);
@@ -43,16 +66,12 @@ export default function Player() {
       audio.removeEventListener('loadedmetadata', onMeta);
       audio.removeEventListener('ended', onEnded);
     };
-  }, [book]);
+  }, [book, user, id]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (playing) {
-      audio.pause();
-    } else {
-      audio.play();
-    }
+    if (playing) { audio.pause(); } else { audio.play(); }
     setPlaying(!playing);
   };
 
@@ -97,19 +116,16 @@ export default function Player() {
         ))}
       </div>
 
-      {/* Summary content */}
       <h1 className="text-2xl font-bold text-[#032b41] mb-4">{book.title}</h1>
       <p className={`${fontSizes[fontSize]} text-[#394547] font-light leading-relaxed whitespace-pre-line`}>
         {book.summary}
       </p>
 
-      {/* Audio element */}
       {book.audioLink && <audio ref={audioRef} src={book.audioLink} preload="metadata" />}
 
       {/* Audio player bar */}
       <div className="fixed bottom-0 left-0 md:left-[200px] right-0 bg-[#042330] text-white z-40">
         <div className="flex items-center gap-4 px-4 md:px-8 py-3">
-          {/* Book info */}
           <div className="flex items-center gap-3 min-w-0 shrink-0">
             {book.imageLink ? (
               <img src={book.imageLink} alt="" className="w-12 h-12 object-cover rounded hidden sm:block" />
@@ -122,7 +138,6 @@ export default function Player() {
             </div>
           </div>
 
-          {/* Controls */}
           <div className="flex items-center gap-3 mx-auto">
             <button onClick={() => skip(-10)} className="hover:opacity-70 transition-opacity">
               <RotateCcw className="w-5 h-5" />
@@ -142,7 +157,6 @@ export default function Player() {
             </button>
           </div>
 
-          {/* Progress */}
           <div className="flex items-center gap-2 flex-1 max-w-[400px]">
             <span className="text-xs text-gray-400 w-10 text-right shrink-0">{formatTime(currentTime)}</span>
             <input
