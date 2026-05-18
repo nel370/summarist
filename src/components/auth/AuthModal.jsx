@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useAuthModal } from '@/lib/AuthModal';
 import { base44 } from '@/api/base44Client';
 
-const GUEST_EMAIL = 'guest@summarist.com';
-const GUEST_PASSWORD = 'guest123456';
+const GUEST_EMAIL = 'guest@gmail.com';
+const GUEST_PASSWORD = 'guest123';
 
 export default function AuthModal() {
   const { isOpen, closeAuthModal } = useAuthModal();
@@ -30,16 +30,7 @@ export default function AuthModal() {
       setShowGuestInfo(false);
       window.location.href = '/for-you';
     } catch (err) {
-      // If login fails, try registering the guest account first
-      try {
-        await base44.auth.register({ email: GUEST_EMAIL, password: GUEST_PASSWORD });
-        await base44.auth.loginViaEmailPassword(GUEST_EMAIL, GUEST_PASSWORD);
-        closeAuthModal();
-        setShowGuestInfo(false);
-        window.location.href = '/for-you';
-      } catch (regErr) {
-        setGuestError('Guest login is temporarily unavailable. Please try again.');
-      }
+      setGuestError('Guest login failed. Please ensure the guest account is set up in the dashboard.');
     }
     setGuestLoading(false);
   };
