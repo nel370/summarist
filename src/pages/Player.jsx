@@ -14,7 +14,7 @@ function formatTime(s) {
 
 export default function Player() {
   const { id } = useParams();
-  const { user } = useFirebaseAuth();
+  const { user, isGuest } = useFirebaseAuth();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
@@ -42,7 +42,7 @@ export default function Player() {
     const onEnded = async () => {
       setPlaying(false);
       // Mark book as finished
-      if (user && !finishedMarked.current) {
+      if (user && !isGuest && !finishedMarked.current) {
         finishedMarked.current = true;
         const existing = await base44.entities.SavedBook.filter({ book_id: id, created_by: user.email });
         if (existing.length > 0) {

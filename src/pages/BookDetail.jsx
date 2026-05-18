@@ -16,7 +16,7 @@ function formatDuration(seconds) {
 export default function BookDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useFirebaseAuth();
+  const { user, isGuest } = useFirebaseAuth();
   const { openAuthModal } = useAuthModal();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,7 @@ export default function BookDetail() {
 
   // Check if already saved
   useEffect(() => {
-    if (!user || !id) return;
+    if (!user || !id || isGuest) return;
     base44.entities.SavedBook.filter({ book_id: id, created_by: user.email })
       .then(data => {
         if (data.length > 0) {
@@ -62,13 +62,14 @@ export default function BookDetail() {
   }, [user, id]);
 
   const handleReadListen = () => {
-    if (!user) { openAuthModal(); return; }
-    if (book.subscriptionRequired) { navigate('/choose-plan'); return; }
+    if (!user && !isGuest) { openAuthModal(); return; }
+    if (!isGuest && book.subscriptionRequired) { navigate('/choose-plan'); return; }
     navigate(`/player/${id}`);
   };
 
   const handleSave = async () => {
-    if (!user) { openAuthModal(); return; }
+    if (!user && !isGuest) { openAuthModal(); return; }
+    if (isGuest) return; // guests can't save (no account)
     setSavingLoading(true);
     if (saved && savedId) {
       await base44.entities.SavedBook.delete(savedId);
