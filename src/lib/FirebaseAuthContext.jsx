@@ -25,8 +25,22 @@ export const FirebaseAuthProvider = ({ children }) => {
     base44.auth.logout('/');
   };
 
+  const refreshUser = async () => {
+    try {
+      const authed = await base44.auth.isAuthenticated();
+      if (authed) {
+        const u = await base44.auth.me();
+        setUser(u);
+      } else {
+        setUser(null);
+      }
+    } catch {
+      setUser(null);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoadingAuth, logout }}>
+    <AuthContext.Provider value={{ user, isLoadingAuth, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
