@@ -1,16 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuthModal } from '@/lib/AuthModal';
 import { base44 } from '@/api/base44Client';
 
 export default function AuthModal() {
   const { isOpen, closeAuthModal } = useAuthModal();
+  const [showGuestInfo, setShowGuestInfo] = useState(false);
 
   const handleLogin = () => {
     closeAuthModal();
     base44.auth.redirectToLogin(window.location.href);
   };
 
+  const handleGuestLogin = () => {
+    setShowGuestInfo(true);
+  };
+
+  const handleProceedAsGuest = () => {
+    closeAuthModal();
+    setShowGuestInfo(false);
+    base44.auth.redirectToLogin(window.location.href);
+  };
+
   const handleClose = () => {
+    setShowGuestInfo(false);
     closeAuthModal();
   };
 
@@ -33,67 +45,100 @@ export default function AuthModal() {
         </button>
 
         <div className="p-8">
-          <div className="text-[#032b41] text-2xl font-bold text-center mb-2">
-            Get started with Summarist
-          </div>
-          <p className="text-sm text-gray-500 text-center mb-8">
-            Log in or create an account to access all features.
-          </p>
+          {!showGuestInfo ? (
+            <>
+              <div className="text-[#032b41] text-2xl font-bold text-center mb-2">
+                Get started with Summarist
+              </div>
+              <p className="text-sm text-gray-500 text-center mb-8">
+                Log in or create an account to access all features.
+              </p>
 
-          {/* Guest / Login button */}
-          <button
-            onClick={handleLogin}
-            className="w-full flex items-center gap-4 border border-gray-300 rounded py-3 px-4 text-sm text-[#032b41] hover:bg-gray-50 transition-colors mb-4"
-          >
-            <figure className="w-8 h-8 rounded-full bg-[#032b41] flex items-center justify-center shrink-0 m-0">
-              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="16" width="16" className="text-white" xmlns="http://www.w3.org/2000/svg">
-                <path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z"/>
-              </svg>
-            </figure>
-            <span>Login as a Guest</span>
-          </button>
+              {/* Guest login button */}
+              <button
+                onClick={handleGuestLogin}
+                className="w-full flex items-center gap-4 border border-gray-300 rounded py-3 px-4 text-sm text-[#032b41] hover:bg-gray-50 transition-colors mb-4"
+              >
+                <figure className="w-8 h-8 rounded-full bg-[#032b41] flex items-center justify-center shrink-0 m-0">
+                  <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" height="16" width="16" className="text-white" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z"/>
+                  </svg>
+                </figure>
+                <span>Login as a Guest</span>
+              </button>
 
-          {/* Separator */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400">or</span>
-            <div className="flex-1 h-px bg-gray-200" />
-          </div>
+              {/* Separator */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400">or</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
 
-          {/* Google / full login */}
-          <button
-            onClick={handleLogin}
-            className="w-full flex items-center gap-4 border border-gray-300 rounded py-3 px-4 text-sm text-[#032b41] hover:bg-gray-50 transition-colors mb-4"
-          >
-            <figure className="w-8 h-8 flex items-center justify-center shrink-0 m-0">
-              <img
-                alt="google"
-                src="https://summarist.vercel.app/_next/static/media/google.864494ce.png"
-                width="32"
-                height="32"
-              />
-            </figure>
-            <span>Login with Google</span>
-          </button>
+              {/* Google login */}
+              <button
+                onClick={handleLogin}
+                className="w-full flex items-center gap-4 border border-gray-300 rounded py-3 px-4 text-sm text-[#032b41] hover:bg-gray-50 transition-colors mb-4"
+              >
+                <figure className="w-8 h-8 flex items-center justify-center shrink-0 m-0">
+                  <img
+                    alt="google"
+                    src="https://summarist.vercel.app/_next/static/media/google.864494ce.png"
+                    width="32"
+                    height="32"
+                  />
+                </figure>
+                <span>Login with Google</span>
+              </button>
 
-          {/* Separator */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400">or</span>
-            <div className="flex-1 h-px bg-gray-200" />
-          </div>
+              {/* Separator */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400">or</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
 
-          {/* Email login */}
-          <button
-            onClick={handleLogin}
-            className="w-full bg-[#2bd97c] hover:bg-[#20ba68] text-[#032b41] font-semibold py-2.5 rounded text-sm transition-colors"
-          >
-            Login / Sign Up with Email
-          </button>
+              {/* Email login */}
+              <button
+                onClick={handleLogin}
+                className="w-full bg-[#2bd97c] hover:bg-[#20ba68] text-[#032b41] font-semibold py-2.5 rounded text-sm transition-colors"
+              >
+                Login / Sign Up with Email
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="text-[#032b41] text-2xl font-bold text-center mb-2">
+                Guest Credentials
+              </div>
+              <p className="text-sm text-gray-500 text-center mb-6">
+                Use these credentials on the login page to access the app as a guest.
+              </p>
 
-          <p className="text-center text-xs text-gray-400 mt-4">
-            All options redirect to our secure login page.
-          </p>
+              <div className="bg-[#f1f6f4] rounded-lg p-4 mb-6 space-y-3">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Email</p>
+                  <p className="text-sm font-semibold text-[#032b41] select-all">guest@gmail.com</p>
+                </div>
+                <div className="border-t border-gray-200 pt-3">
+                  <p className="text-xs text-gray-500 mb-1">Password</p>
+                  <p className="text-sm font-semibold text-[#032b41] select-all">guest123</p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleProceedAsGuest}
+                className="w-full bg-[#2bd97c] hover:bg-[#20ba68] text-[#032b41] font-semibold py-2.5 rounded text-sm transition-colors mb-3"
+              >
+                Proceed to Login
+              </button>
+              <button
+                onClick={() => setShowGuestInfo(false)}
+                className="w-full border border-gray-300 text-[#032b41] py-2.5 rounded text-sm hover:bg-gray-50 transition-colors"
+              >
+                Back
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
