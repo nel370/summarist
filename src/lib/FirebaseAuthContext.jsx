@@ -8,8 +8,15 @@ export const FirebaseAuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    base44.auth.me()
-      .then(u => setUser(u))
+    base44.auth.isAuthenticated()
+      .then(async (authed) => {
+        if (authed) {
+          const u = await base44.auth.me();
+          setUser(u);
+        } else {
+          setUser(null);
+        }
+      })
       .catch(() => setUser(null))
       .finally(() => setIsLoadingAuth(false));
   }, []);
