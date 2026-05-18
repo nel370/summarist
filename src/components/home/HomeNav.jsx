@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 
 export default function HomeNav() {
   const { openAuthModal } = useAuthModal();
-  const { user } = useFirebaseAuth();
+  const { user, isGuest, logout } = useFirebaseAuth();
 
   return (
     <nav className="h-20">
@@ -19,13 +19,23 @@ export default function HomeNav() {
           />
         </Link>
         <div className="flex gap-6 items-center">
-          {user ? (
+          {isGuest ? (
+            <>
+              <span className="text-[#032b41] text-sm">Guest</span>
+              <button
+                onClick={logout}
+                className="text-[#032b41] hover:text-[#2bd97c] transition-colors text-sm cursor-pointer"
+              >
+                Exit Guest
+              </button>
+            </>
+          ) : user ? (
             <>
               <Link to="/for-you" className="text-[#032b41] hover:text-[#2bd97c] transition-colors text-sm">
                 {user.full_name || user.email}
               </Link>
               <button
-                onClick={() => base44.auth.logout('/')}
+                onClick={logout}
                 className="text-[#032b41] hover:text-[#2bd97c] transition-colors text-sm cursor-pointer"
               >
                 Logout

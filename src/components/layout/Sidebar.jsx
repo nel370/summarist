@@ -20,7 +20,7 @@ const bottomItems = [
 
 export default function Sidebar() {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, isGuest, logout } = useAuth();
   const { openAuthModal } = useAuthModal();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -80,13 +80,13 @@ export default function Sidebar() {
         {bottomItems.map((item) => (
           <NavLink key={item.label} item={item} />
         ))}
-        {user ? (
+        {(user || isGuest) ? (
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-6 py-3 text-[#032b41] hover:bg-[#f1f6f4] transition-colors w-full"
           >
             <LogOut className="w-5 h-5" />
-            <span className="text-sm font-light">Logout</span>
+            <span className="text-sm font-light">{isGuest ? 'Exit Guest' : 'Logout'}</span>
           </button>
         ) : (
           <button
