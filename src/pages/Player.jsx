@@ -26,8 +26,12 @@ export default function Player() {
 
   useEffect(() => {
     fetch(`https://us-central1-summaristt.cloudfunctions.net/getBook?id=${id}`)
-      .then(r => r.json())
-      .then(data => { setBook(data); setLoading(false); });
+      .then(r => r.text())
+      .then(text => {
+        if (!text) { setLoading(false); return; }
+        setBook(JSON.parse(text));
+        setLoading(false);
+      });
   }, [id]);
 
   useEffect(() => {
