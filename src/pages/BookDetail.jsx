@@ -28,10 +28,14 @@ export default function BookDetail() {
 
   useEffect(() => {
     fetch(`https://us-central1-summaristt.cloudfunctions.net/getBook?id=${id}`)
-      .then(r => r.json())
-      .then(data => {
-        setBook(data);
-        setLoading(false);
+      .then(r => {
+        if (!r.ok || r.status === 204) { setLoading(false); return null; }
+        return r.text().then(text => {
+          if (!text) { setLoading(false); return null; }
+          const data = JSON.parse(text);
+          setBook(data);
+          setLoading(false);
+        });
       });
   }, [id]);
 
